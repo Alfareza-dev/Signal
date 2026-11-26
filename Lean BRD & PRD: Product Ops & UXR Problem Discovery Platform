@@ -1,0 +1,231 @@
+# Lean BRD & PRD: Signal — Product Ops & UXR Problem Discovery Platform
+
+| Atribut Dokumen | Keterangan |
+| --- | --- |
+| **Nama Produk** | **Signal** *(Product Ops & UXR Problem Discovery Workspace)* |
+| **Versi Dokumen** | v1.1 — Proposal Konsep, Spesifikasi MVP & Integrasi Kajian Riset |
+| **Peran Penyusun** | Full-Stack Product Developer |
+| **Target Pengguna Utama** | UX Researcher (UXR), Product Researcher, Product Operations (Product Ops), Product Manager (PM) |
+| **Tech Stack Utama** | **Frontend:** Next.js (App Router) · **Backend:** NestJS · **Queue:** BullMQ + Redis · **DB:** PostgreSQL / MariaDB (Prisma ORM) |
+| **Prinsip Utama Produk** | *Project-Isolated, Qualitative-First, Low-AI Cost Architecture* |
+
+---
+
+# BAGIAN 1: LEAN BRD (BUSINESS REQUIREMENTS DOCUMENT)
+
+## 1.1 Latar Belakang & Konteks Bisnis
+
+Proses *discovery* produk yang akurat menjadi faktor penentu keberhasilan inisiatif pengembangan produk. Merujuk pada disertasi doktoral Carnegie Mellon University (Yıldırım, 2024), sekitar **~90% inisiatif AI/produk gagal mencapai implementasi komersial** akibat kesalahan pada tahap awal perumusan masalah (*problem formulation*). Sementara itu, benchmark industri dari Kanopy Labs (2026) menunjukkan bahwa otomasi riset mampu memangkas durasi *Social Listening & Feedback Mining* dari **30 jam manual menjadi 2 jam**, serta analisis wawancara dari **40–60 jam menjadi 3 jam**.
+
+Aplikasi internal sebelumnya (`keyword-tracker`) baru berfungsi sebagai alat penarik data berbasis kata kunci (*keyword scraper*) tanpa manajemen ruang kerja per proyek, tanpa alur pengolahan riset kualitatif, dan dengan ketergantungan tinggi pada pemrosesan AI. Oleh karena itu, perusahaan membangun ulang platform ini menjadi **Signal**—sebuah ruang kerja *end-to-end* untuk Product Ops dan UXR yang terstruktur per proyek, mendukung riset lintas kanal, dan beroperasi dengan arsitektur *Low-AI Cost*.
+
+## 1.2 Tujuan Bisnis (Business Objectives)
+
+1. **Sentralisasi & Isolasi Riset:** Menyatukan seluruh sumber *problem farming* (media sosial, ulasan aplikasi, jurnal akademik, dan data manual) ke dalam ruang kerja berbasis **Project** agar temuan lintas inisiatif (Project A, B, C) tidak tercampur.
+2. **Standardisasi Output Riset Kualitatif:** Mempercepat konversi data mentah menjadi artefak kerja yang benar-benar terpakai tim produk—yaitu **Qualitative Coding**, **Distinction Engine** (*Pain Point* vs. *Workaround*), **Quadrant Empathy Mapping**, serta **Problem Formulation Brief** berbasis bukti.
+3. **Efisiensi Biaya Operasional AI (*Low-AI Architecture*):** Menekan pengeluaran token API LLM secara drastis dengan menyelesaikan mayoritas pekerjaan organisasi, *triage*, dan *semantic clustering* melalui fitur non-AI serta model lokal gratis.
+
+## 1.3 Metrik Keberhasilan (Key Performance Indicators)
+
+| Dimensi | Metrik Keberhasilan (Target) | Cara Pengukuran |
+| --- | --- | --- |
+| **Efisiensi Biaya AI** | Minimal **70–80%** aktivitas pengguna berjalan dengan **0 token Cloud API**; reduksi volume teks yang dikirim ke LLM minimal **60%** lewat deduplikasi & clustering lokal. | Perbandingan jumlah baris data mentah terhadap total token API pada log sistem serta *hit-rate* `ai_insights` cache. |
+| **Kecepatan Sintesis UXR** | Penurunan waktu pengolahan data *Social Listening* & temuan mentah ke papan Empathy Map & Brief minimal **50–70%** dibanding proses manual (mengacu benchmark industri pemangkasan 30 jam menjadi 2 jam). | Waktu rata-rata dari data masuk hingga dokumen *Problem Formulation Brief* diekspor. |
+| **Organisasi & Keterlacakan Data** | **100%** data hasil *problem farming* terikat pada `project_id`, folder/label, dan referensi URL sumber asli (*traceable*). | Audit integritas skema database (tidak ada data *orphan* tanpa relasi project dan bukti). |
+| **Stabilitas Operasional** | **0%** *request timeout* pada antarmuka saat proses scraping atau clustering berjalan. | Seluruh proses berat dieksekusi asinkron lewat *background queue* (BullMQ + Redis).
+
+ |
+
+## 1.4 Pemangku Kepentingan & Pengguna (Stakeholders)
+
+* **UX Researcher & Product Researcher (Pengguna Utama):** Melakukan *problem farming*, penyaringan *noise*, koding kualitatif, penyusunan Empathy Map, dan perumusan masalah.
+* **Product Operations / Product Manager (Pengguna Sekunder):** Memantau temuan masalah per proyek, memverifikasi bukti kutipan pengguna, meninjau *Impact Matrix*, dan mengunduh *Problem Formulation Brief* untuk prioritas *roadmap*.
+* **Engineering / Infrastructure Internal (Pengelola Sistem):** Memastikan biaya server dan kuota API terkendali serta menjaga keandalan *worker* scraping dan antrean.
+
+## 1.5 Batasan Bisnis & Operasional (Business Constraints)
+
+* **Batasan Biaya API:** Aplikasi wajib tetap **100% fungsional untuk alur kerja inti meskipun fitur Cloud AI dinonaktifkan atau kuota API habis**.
+* **Batasan Platform Eksternal:** Media sosial (X, Instagram, TikTok, Threads) memiliki mekanisme anti-scraping yang ketat; sistem wajib menyediakan jalur alternatif stabil (API resmi jurnal OpenAlex, scraper ulasan toko aplikasi, serta *Import CSV/manual*) agar riset tidak terhenti saat scraper medsos terblokir.
+* **Disiplin Ruang Lingkup (*Scope Discipline*):** Generator *Static User Persona* dikeluarkan dari ruang lingkup produk karena tidak relevan dengan kebutuhan taktis UXR. Sementara itu, fitur validasi ide berbasis *Synthetic Persona* (*AI LEGO Framework*) ditunda ke tahap lanjutan (*Future Roadmap*) guna menjaga disiplin *Low-AI Cost* pada fase MVP.
+
+
+
+## 1.6 Posisi Terhadap Acuan Industri (Competitive Benchmark)
+
+Evaluasi komparatif industri (ClosedLoop AI, 2026) membagi platform *Product Discovery* ke dalam dua generasi. **Signal** dirancang secara hibrida dengan menggabungkan keunggulan keduanya melalui arsitektur *local-first*:
+
+* **Acuan Generasi Pertama (*Camp 1 — Topic-Based*: Dovetail, Productboard Spark, Enterpret, Chattermill):** Mengadopsi kerapian repositori berbasis proyek, *tagging* kualitatif, dan keterlacakan bukti (*evidence traceability*). Kelemahan *Camp 1* adalah ketergantungan pada taksonomi kaku sehingga sering gagal mendeteksi masalah baru di luar kategori yang sudah ditentukan.
+* **Acuan Generasi Baru (*Camp 2 — Autonomous Insight Intelligence*: ClosedLoop AI & Tactiq):** Mengadopsi klasifikasi tipe insight atomik (**Pain Point, Workaround, Feature Request, Positive Feedback, Question**), **Semantic Clustering** untuk mendeteksi masalah baru (*unknown problems*), serta **Impact Scoring** terukur per masalah—namun mengeksekusi tahap *clustering* secara lokal gratis (`MiniLM`) agar biaya operasional tetap rendah.
+
+
+
+## 1.7 Landasan Referensi Akademik & Industri
+
+| No | Judul Riset / Laporan | Penulis & Institusi | Tahun | Relevansi terhadap Desain Signal |
+| --- | --- | --- | --- | --- |
+| 1 | *Discovering the Right Things to Design with AI* | Nur Yıldırım (Carnegie Mellon University) | 2024 | Landasan urgensi perumusan masalah (~90% kegagalan inisiatif AI berasal dari salah rumusan masalah di awal).
+
+ |
+| 2 | *Towards AI Agents Supported Research Problem Formulation* | A. F. Pereira et al. (arXiv:2512.12719v1) | 2025 | Acuan kerangka *Lean Research Inception* untuk menyusun draf rumusan masalah terstruktur.
+
+ |
+| 3 | *AI LEGO: Scaffolding Cross-Functional Collaboration in Early Design* | Muzhe Wu et al. (ACM CSCW) | 2026 | Referensi *Future Roadmap* untuk *Synthetic Persona Pre-Screening* pada fase lanjutan.
+
+ |
+| 4 | *AI for Product Discovery and User Research Automation 2026* | Nate Laquis (Kanopy Labs) | 2026 | Benchmark efisiensi waktu pengolahan data kualitatif (manual 30–60 jam vs. terotomatisasi 2–3 jam).
+
+ |
+| 5 | *Best AI Product Discovery Tools in 2026* | Jiri Kobelka (ClosedLoop AI) | 2026 | Acuan klasifikasi 5 tipe insight atomik, *Semantic Clustering* untuk *unknown problems*, dan *Impact Scoring*.
+
+ |
+| 6 | *How to Use AI for Product Research* | Stephanie Chan (Tactiq) | 2025–26 | Acuan prompt analisis kualitatif dan ekstraksi kebutuhan berbasis *Jobs-to-Be-Done (JTBD)*.
+
+ |
+
+---
+
+# BAGIAN 2: PRD (PRODUCT REQUIREMENTS DOCUMENT)
+
+## 2.1 Ruang Lingkup Produk (In-Scope, Deferred & Out-of-Scope)
+
+| Status | Fitur / Kemampuan | Rasionalisasi Produk |
+| --- | --- | --- |
+| **IN-SCOPE (MVP — Fase 1)** | **Project Workspace, Folder & Label** | Memisahkan temuan Project A, B, C agar tidak tercampur dan mudah difilter. |
+| **IN-SCOPE (MVP — Fase 1)** | **Multi-Source Problem Farming** (CSV, OpenAlex Jurnal, Play Store/App Store, Medsos via Queue + opsi *All Sources*) | Memenuhi kebutuhan sumber riset lintas media sosial dan jurnal dalam satu pintu. |
+| **IN-SCOPE (MVP — Fase 1)** | **Triage Inbox, Qualitative Coding & Distinction Engine (0% AI)** | Fitur inti UXR untuk membuang *noise* serta memisahkan *Pain Point* dan *Workaround* secara cepat. |
+| **IN-SCOPE (MVP — Fase 1)** | **Quadrant Empathy Mapping Board (0% AI)** | Konversi otomatis data berkode ke 4 kuadran (*Says, Thinks, Feels, Does*) secara visual. |
+| **IN-SCOPE (MVP — Fase 1)** | **Overview & Research Health Dashboard (0% AI)** | Menampilkan frekuensi tema, sebaran sumber, keseimbangan kuadran, dan status kesiapan riset secara dinamis. |
+| **IN-SCOPE (Fase 2)** | **Local Semantic Clustering (`MiniLM` / TF-IDF)** | Mengelompokkan komentar mirip & mendeteksi *unknown problems* secara lokal dengan 0 token API. |
+| **IN-SCOPE (Fase 2)** | **On-Demand AI Problem Formulation & Impact Matrix + Cache** | AI hanya dipanggil saat tombol ditekan pada cluster terpilih; menghasilkan rumusan masalah (*Lean Inception*) + skor **Reach, Severity, Virality** yang di-cache permanen. |
+| **IN-SCOPE (Fase 1/2)** | **Export Problem Formulation Brief (MD / PDF)** | Memudahkan distribusi hasil riset beserta bukti kutipan ke tim produk dan manajemen. |
+| **DEFERRED (Fase 3+ / Future)** | **Synthetic Persona Pre-Screening (*AI LEGO*)** | Simulasi pra-uji 20 ide menjadi 3 ide terbaik berbasis LLM ditunda ke fase lanjutan agar MVP tetap disiplin pada prinsip *Low-AI Cost*. |
+| **DEFERRED (Fase 3+ / Future)** | **Sentiment Spike Tracker & MCP/API Engineering Integration** | Deteksi lonjakan sentimen negatif kompetitor secara berkala dan integrasi insight langsung ke IDE tim engineering (Cursor/VS Code). |
+| **OUT-OF-SCOPE (Ditolak)** | **Static User Persona Generator (Biodata Fiktif)** | Tidak terpakai dalam alur kerja taktis UXR internal karena terlalu dangkal dan tidak berbasis bukti masalah konkret. |
+| **OUT-OF-SCOPE (Ditolak)** | **Auto-Scraping Tanpa Batas / Real-Time Streaming 24/7** | Berisiko tinggi terkena pemblokiran IP, boros sumber daya server, dan menghasilkan volume *noise* berlebih. |
+| **OUT-OF-SCOPE (Ditolak)** | **Kolaborasi Multi-Cursor Real-Time (seperti Figma/Miro)** | Kompleksitas teknis terlalu tinggi untuk tahap awal; kolaborasi asinkron berbasis database sudah mencukupi.
+
+ |
+
+## 2.2 Peran Aktor Sistem (System Roles)
+
+* **Researcher (Default Role):** Membuat dan mengelola proyek riset, menjalankan job *data intake*, melakukan *triage* & *qualitative coding*, menyusun Empathy Map, menjalankan sintesis AI *on-demand*, dan mengekspor laporan.
+* **Admin / Lead Product Ops:** Memiliki seluruh hak akses Researcher ditambah manajemen akun pengguna, pengaturan batas kuota AI (*rate limit*), serta pemantauan status antrean (*queue health*).
+
+## 2.3 Kebutuhan Fungsional (Functional Requirements)
+
+Prioritas menggunakan metode **MoSCoW**: **P0 (Must-Have MVP)**, **P1 (Should-Have / Fase 2)**, **P2 (Future / Fase 3+)**.
+
+### Modul 1: Autentikasi & Manajemen Project (Workspace Isolation)
+
+| ID | Fitur | User Story | Acceptance Criteria (AC) | Prioritas |
+| --- | --- | --- | --- | --- |
+| **FR-01** | Autentikasi Pengguna | Sebagai Researcher, saya ingin login dengan aman agar riwayat riset tercatat per pengguna. | Login berbasis JWT (*access* & *refresh token*) berjalan di NestJS; halaman internal terlindungi middleware Next.js. | **P0** |
+| **FR-02** | CRUD Project & Folder | Sebagai Researcher, saya ingin mengelompokkan riset ke dalam Project (A, B, C) dan sub-folder agar data *problem farming* tidak bercampur. | Pengguna dapat membuat, mengubah, mengarsipkan Project; setiap Project memiliki ruang data, folder, dan statistik terisolasi (`project_id`). | **P0** |
+| **FR-03** | Manajemen Label & Distinction Engine | Sebagai Researcher, saya ingin memisahkan keluhan umum (*Pain Point*) dari akal-akalan pengguna (*Workaround*) serta memberi label tema kustom per project. | Setiap temuan memiliki status klasifikasi (prioritas MVP: `Raw`, `Pain Point`, `Workaround`, `Noise`, dengan skema ekstensibel mendukung 5 tipe insight atomik: *Pain Point, Workaround, Feature Request, Positive Feedback, Question*). Setiap label memiliki `nama`, `warna`, dan pemetaan opsional ke kuadran Empathy Map.
+
+ | **P0** |
+
+### Modul 2: Multi-Source Problem Farming (Data Intake)
+
+| ID | Fitur | User Story | Acceptance Criteria (AC) | Prioritas |
+| --- | --- | --- | --- | --- |
+| **FR-04** | Manual Input & Import CSV | Sebagai Researcher, saya ingin mengunggah file CSV atau menempel teks temuan ke Project tertentu agar tetap bisa riset meski scraper terblokir. | Mendukung unggah CSV dengan pemetaan kolom (`content`, `source`, `author`, `url`, `date`, `folder`); validasi baris duplikat otomatis saat import. | **P0** |
+| **FR-05** | Intake Jurnal Akademik (OpenAlex) | Sebagai Researcher, saya ingin mencari abstrak dan metadata jurnal berdasarkan keyword langsung masuk ke Project saya. | Terintegrasi dengan OpenAlex REST API; mengambil judul, abstrak, tahun terbit, jumlah sitasi, dan DOI lalu menyimpannya sebagai `findings` di project terpilih. | **P0** |
+| **FR-06** | Intake Ulasan Aplikasi | Sebagai Researcher, saya ingin menarik ulasan negatif/spesifik dari Google Play Store atau App Store sebagai sumber *pain point*. | Menggunakan `google-play-scraper` / `app-store-scraper` via background job; mendukung filter rating (misal bintang 1–3) dan batas jumlah data. | **P1** |
+| **FR-07** | Intake Media Sosial & Mode "Semua Sumber (All)" | Sebagai Researcher, saya ingin menarik data dari media sosial (X, IG, TikTok, Threads) maupun menjalankan pencarian menyeluruh lintas medsos dan jurnal dalam satu aksi. | Menyediakan opsi **Semua Sumber (All)** dan per-kanal spesifik; eksekusi dijalankan di *background worker* (BullMQ + Playwright/HTTP client) dengan indikator status (*Queued, Processing, Completed, Failed*) tanpa memblokir browser. | **P1** |
+
+### Modul 3: Triage & Qualitative Coding (0% AI Core Workflow)
+
+| ID | Fitur | User Story | Acceptance Criteria (AC) | Prioritas |
+| --- | --- | --- | --- | --- |
+| **FR-08** | Quick Triage Inbox | Sebagai Researcher, saya ingin memilah data mentah menjadi *Pain Point*, *Workaround*, atau *Noise* dengan cepat sebelum analisis. | Tampilan daftar berkelompok (*collapsible list*) dengan filter sumber, folder, dan pencarian kata kunci; mendukung aksi cepat satu klik dan *bulk action*. | **P0** |
+| **FR-09** | Qualitative Coding & Multi-Tagging | Sebagai Researcher, saya ingin menempelkan satu atau lebih kode kualitatif pada tiap kutipan untuk melihat pola masalah dominan. | Satu `finding` dapat memiliki banyak `codes` (*many-to-many*); halaman Overview otomatis menghitung frekuensi setiap kode (*Pain Point* & *Workaround* terbanyak) secara deterministik tanpa AI. | **P0** |
+
+### Modul 4: Quadrant Empathy Mapping Board (0% AI)
+
+| ID | Fitur | User Story | Acceptance Criteria (AC) | Prioritas |
+| --- | --- | --- | --- | --- |
+| **FR-10** | Konversi Otomatis ke 4 Kuadran | Sebagai Researcher, saya ingin temuan yang sudah dikoding otomatis tersusun ke dalam **Quadrant Empathy Map** (*Says, Thinks, Feels, Does*). | Papan 4 kuadran tersinkronisasi langsung dengan temuan non-Noise yang memiliki tag kuadran; mendukung perpindahan kuadran dan panel detail kutipan asli beserta URL sumber. | **P0** |
+| **FR-11** | Filter Board & Indikator Kelengkapan | Sebagai Researcher, saya ingin memfilter Empathy Map per folder/sumber serta mengetahui temuan yang belum dipetakan. | Perubahan filter langsung memperbarui keempat kuadran; menampilkan notifikasi jumlah temuan `Pain Point`/`Workaround` yang belum memiliki kuadran. | **P0** |
+
+### Modul 5: Local Pre-Processing & On-Demand AI (Low-AI Optimization)
+
+| ID | Fitur | User Story | Acceptance Criteria (AC) | Prioritas |
+| --- | --- | --- | --- | --- |
+| **FR-12** | Deduplikasi & Local Semantic Clustering | Sebagai Researcher, saya ingin komentar bermakna mirip otomatis dikelompokkan untuk menemukan masalah baru (*unknown problems*) tanpa memakan kuota API berbayar. | Worker NestJS menjalankan ekstraksi embedding lokal (`paraphrase-multilingual-MiniLM-L12-v2` via `@huggingface/transformers` atau TF-IDF) untuk membentuk `clusters` dari temuan valid dengan biaya **0 token API**. | **P1** |
+| **FR-13** | On-Demand AI Problem Formulation & Impact Matrix | Sebagai Researcher, saya ingin menekan satu tombol untuk mengubah cluster terpilih menjadi rumusan masalah terstruktur beserta skor dampaknya. | AI Cloud (Gemini 2.5 Flash-Lite / Flash atau Ollama lokal Qwen 2.5) **hanya dipanggil saat tombol diklik** pada cluster terpilih; output menggunakan *Structured JSON Schema* berbasis kerangka *Lean Inception* yang memuat: Rumusan Masalah, Klasifikasi (*Pain Point/Workaround*), **Impact Matrix (Reach, Severity, Virality)**, dan daftar `supporting_finding_ids`. | **P1** |
+| **FR-14** | AI Response Caching | Sebagai Sistem, saya tidak boleh memanggil API AI dua kali untuk kumpulan data dan parameter yang identik. | Sistem menghasilkan `hash` dari kombinasi `project_id + finding_ids + prompt_version`; jika hash sudah ada di tabel `ai_insights`, sistem mengembalikan hasil cache secara instan (0 token ulang).
+
+ | **P1** |
+
+### Modul 6: Pelaporan & Ekspor
+
+| ID | Fitur | User Story | Acceptance Criteria (AC) | Prioritas |
+| --- | --- | --- | --- | --- |
+| **FR-15** | Export Problem Formulation Brief | Sebagai Researcher, saya ingin mengunduh ringkasan masalah, *Impact Matrix*, isi Empathy Map, dan bukti kutipan dalam format siap bagikan. | Mendukung ekspor ke **Markdown (`.md`)** (P0) dan **PDF** (P1) yang terstruktur per project.
+
+ | **P0/P1** |
+
+## 2.4 Kebutuhan Non-Fungsional (Non-Functional Requirements)
+
+| Kategori | Spesifikasi Target |
+| --- | --- |
+| **Performa & Responsivitas** | Respons API CRUD standar (Project, Coding, Empathy Map) kurang dari 300ms pada p95. Seluruh operasi berat (scraping, clustering lokal, pemanggilan AI) wajib asinkron menggunakan *message queue* (BullMQ + Redis). |
+| **Efisiensi AI & Pengendalian Biaya** | Wajib menerapkan *hard cap* jumlah teks per pemanggilan AI, *deduplication* sebelum pemrosesan, serta *database caching* permanen. Tersedia *toggle* konfigurasi untuk beralih antara Cloud API dan self-hosted Ollama tanpa mengubah kode bisnis. |
+| **Keamanan & Integritas Data** | Password di-hash (`bcrypt`/`argon2`), validasi payload ketat menggunakan `class-validator` / `Zod` di NestJS, proteksi *role-based access*, serta isolasi query berbasis `project_id` pada setiap endpoint. |
+| **Reliabilitas Scraping** | Implementasi *retry policy* dengan *exponential backoff* pada worker BullMQ; kegagalan pada satu platform (misal X/Instagram) tidak boleh mengganggu stabilitas aplikasi utama atau sumber lain (OpenAlex/CSV). |
+| **Keterlacakan Bukti (*Traceability*)** | Setiap rumusan masalah, skor dampak, maupun kartu Empathy Map wajib menyimpan referensi ID ke data mentah (`finding_id`) dan URL sumber asli guna mencegah halusinasi data. |
+
+## 2.5 Arsitektur Teknis & Alokasi Tech Stack (Next.js + NestJS)
+
+Penggunaan **Next.js** dan **NestJS** sangat optimal karena keduanya berbasis TypeScript (*shared types/DTOs*), memisahkan tanggung jawab UI dan *background processing* secara bersih, serta mampu menjalankan model embedding lokal ringan langsung di ekosistem Node.js.
+
+| Lapisan Sistem | Teknologi Pilihan | Tanggung Jawab Teknis |
+| --- | --- | --- |
+| **Frontend (Web App)** | **Next.js (App Router)**, TypeScript, Tailwind CSS, Shadcn UI, TanStack Query | Dashboard Overview & Research Health, manajemen Project/Folder, tabel Triage & Qualitative Coding responsif, papan 4 kuadran Empathy Map, dan ekspor Markdown/PDF (`@react-pdf/renderer`). |
+| **Backend API (Modular Monolith)** | **NestJS**, TypeScript, Prisma ORM | Arsitektur modular terpisah: `AuthModule`, `ProjectsModule`, `IngestionModule`, `CodingModule`, `EmpathyMapModule`, `ClusteringModule`, dan `AiSynthesisModule`. |
+| **Background Queue & Worker** | **BullMQ + Redis** | Menangani 3 antrean terpisah agar tidak saling menghambat: `scrape-queue` (Playwright/API), `clustering-queue` (MiniLM lokal), dan `ai-synthesis-queue` (Cloud/Ollama LLM). |
+| **Database Utama** | **PostgreSQL** atau **MariaDB** | Menyimpan **8 entitas inti**: `users`, `projects`, `folders`, `sources`, `findings`, `codes` (+ `finding_codes`), `clusters`, dan `ai_insights` (cache). |
+| **Lapisan AI Hibrida (3-Tier)** | **Tier 1 (0% AI):** Agregasi SQL frekuensi kode & pemetaan kuadran. |  |
+
+
+
+**Tier 2 (Lokal Gratis):** `@huggingface/transformers` (`paraphrase-multilingual-MiniLM-L12-v2`) + `natural` (TF-IDF) di NestJS Worker.
+
+
+
+**Tier 3 (On-Demand):** Gemini 2.5 Flash-Lite / Flash (Cloud API) atau Qwen 2.5 via Ollama (Self-Hosted). | Memastikan biaya AI mendekati nol pada fase eksplorasi dan *clustering*, serta hanya terpakai secara terkendali pada fase sintesis akhir. |
+
+## 2.6 Analisis Risiko & Mitigasi
+
+| Risiko | Dampak | Strategi Mitigasi |
+| --- | --- | --- |
+| **Pemblokiran Scraper Media Sosial (X / IG / TikTok)** | Tinggi — Data medsos gagal ditarik tepat waktu. | Terapkan strategi *multi-intake*: prioritaskan sumber stabil (OpenAlex API, Play Store, Import CSV) di MVP; jalankan scraper Playwright dengan *rate limiting*, *job queue*, dan dukungan proxy opsional. |
+| **Konsumsi RAM Tinggi saat Menjalankan MiniLM Lokal di Worker** | Sedang — Backend API ikut lambat jika dijalankan dalam satu proses. | Pisahkan proses *clustering worker* dari proses HTTP utama NestJS (atau batasi *concurrency* BullMQ = 1 job per waktu) dengan model terkuantisasi (ONNX/INT8 ~400MB). |
+| **Halusinasi pada Hasil Sintesis & Skor Dampak AI** | Sedang — Rumusan masalah tidak sesuai fakta di lapangan. | Wajibkan *Structured JSON Output* yang menyertakan `supporting_finding_ids`; UI menampilkan kutipan asli di samping hasil sintesis agar researcher selalu memverifikasi bukti. |
+| **Pembengkakan Ruang Lingkup (*Scope Creep*)** | Tinggi — Aplikasi tidak kunjung selesai. | Kunci batas MVP pada alur **0% AI (Project → Intake CSV/OpenAlex → Coding → Empathy Map)** sebelum mengaktifkan scraper dinamis, AI *on-demand*, dan fitur *Future Roadmap*. |
+
+## 2.7 Roadmap Implementasi Bertahap (Phased Delivery)
+
+* **Fase 1 — Core UXR Workspace (0% AI / Fondasi Produk)**
+* Setup arsitektur Next.js + NestJS + Prisma (8 entitas inti).
+* Implementasi Auth, CRUD Project/Folder/Label, Import CSV, integrasi OpenAlex Jurnal API.
+* Implementasi Quick Triage, Qualitative Coding (*Distinction Engine*), Quadrant Empathy Map Board, Overview Dashboard, dan Export Markdown.
+* *Output Fase 1:* Aplikasi sudah 100% dapat digunakan tim UXR untuk riset nyata tanpa biaya AI.
+
+
+* **Fase 2 — Automated Intake & Local Semantic Clustering**
+* Setup BullMQ + Redis di NestJS.
+* Integrasi `google-play-scraper`, worker scraping media sosial (Playwright), dan fitur *Scrape All Sources*.
+* Implementasi deduplikasi dan *Local Semantic Clustering* (`MiniLM` / TF-IDF) untuk mendeteksi *unknown problems* tanpa token API.
+
+
+* **Fase 3 — On-Demand AI Synthesis & Reporting Polish**
+* Integrasi tombol *On-Demand AI Problem Formulation* (kerangka *Lean Inception* + *Impact Matrix: Reach, Severity, Virality*) menggunakan Gemini Flash-Lite / Ollama Qwen 2.5 beserta `ai_insights` caching.
+* Penambahan Export PDF (*Problem Formulation Brief*) dan perluasan skema 5 klasifikasi insight atomik penuh.
+
+
+* **Fase 4 — Future Expansion (Opsional Pasca-Validasi Tim)**
+* *Sentiment Spike Tracker* (deteksi otomatis lonjakan keluhan pada kompetitor/kategori tertentu).
+* *Synthetic Persona Pre-Screening* (*AI LEGO Framework* — pra-uji ide cepat secara *on-demand*).
+* Integrasi *Model Context Protocol* (MCP) / REST API agar tim Engineering dapat menarik insight produk langsung ke IDE (Cursor/VS Code).
