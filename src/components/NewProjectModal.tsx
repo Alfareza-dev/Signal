@@ -55,7 +55,7 @@ export function NewProjectModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="misal: Riset Onboarding Kurir"
-              className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
+              className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#E9B949] focus:ring-1 focus:ring-[#E9B949]/20"
             />
           </div>
 
@@ -68,7 +68,7 @@ export function NewProjectModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Fokus eksplorasi masalah dan segmen pengguna..."
-              className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
+              className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-[#E9B949] focus:ring-1 focus:ring-[#E9B949]/20"
             />
           </div>
 
@@ -82,7 +82,7 @@ export function NewProjectModal({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-md bg-[#FF7B7B] hover:bg-[#F26666] text-white text-xs font-medium transition-colors cursor-pointer"
             >
               Buat Project
             </button>

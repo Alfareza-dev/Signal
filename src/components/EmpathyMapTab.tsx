@@ -32,9 +32,9 @@ const QUADRANT_CONFIG: {
     key: 'Says',
     title: 'Says (Diucapkan)',
     subtitle: 'Apa yang pengguna katakan secara eksplisit di ulasan atau media sosial',
-    icon: <MessageSquareQuote className="w-4 h-4 text-sky-600" />,
-    headerBg: 'bg-sky-50/60 border-sky-200/60',
-    badgeText: 'text-sky-700 bg-sky-100/80',
+    icon: <MessageSquareQuote className="w-4 h-4 text-orange-600" />,
+    headerBg: 'bg-orange-50/60 border-orange-200/60',
+    badgeText: 'text-orange-700 bg-orange-100/80',
   },
   {
     key: 'Thinks',
@@ -108,7 +108,7 @@ export function EmpathyMapTab({
         <button
           type="button"
           onClick={onGoToAISynthesis}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-blue-50 hover:bg-blue-100/80 text-blue-700 border border-blue-200/80 text-xs font-medium transition-colors cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#FFF0EA] hover:bg-[#FFE4DA]/80 text-[#D9534F] border border-[#FF7B7B]/35/80 text-xs font-medium transition-colors cursor-pointer shrink-0"
         >
           <span>
             Lanjut ke AI Synthesis{aiReadyCount > 0 ? ` (${aiReadyCount} siap)` : ''}
@@ -159,7 +159,7 @@ export function EmpathyMapTab({
                     <div
                       key={card.id}
                       onClick={() => onSelectFinding(card)}
-                      className="p-3.5 rounded-md bg-white border border-[#E5E7EB] hover:border-blue-300 transition-colors cursor-pointer space-y-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
+                      className="p-3.5 rounded-md bg-white border border-[#E5E7EB] hover:border-[#FF7B7B]/50 transition-colors cursor-pointer space-y-2.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]"
                     >
                       <p className="text-[12.5px] leading-relaxed text-gray-800">
                         “{card.quote}”
@@ -194,7 +194,7 @@ export function EmpathyMapTab({
                               })
                             }
                             aria-label="Pindah kuadran"
-                            className="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded px-2 py-0.5 focus:outline-none focus:border-blue-500 cursor-pointer"
+                            className="text-[11px] text-gray-600 bg-gray-50 border border-gray-200 rounded px-2 py-0.5 focus:outline-none focus:border-[#E9B949] cursor-pointer"
                           >
                             <option value="Says">Says</option>
                             <option value="Thinks">Thinks</option>

@@ -106,7 +106,7 @@ export function SettingsModal({
           {/* Section 1: AI Engine & Model Routing */}
           <section className="rounded-lg border border-[#E5E7EB] bg-white p-5 space-y-4">
             <div className="flex items-center gap-2 border-b border-[#E5E7EB] pb-3">
-              <Cpu className="w-4 h-4 text-blue-600" />
+              <Cpu className="w-4 h-4 text-[#FF7B7B]" />
               <h3 className="text-[13px] font-semibold text-gray-900">
                 1. AI Engine & Model Routing (3-Tier Architecture)
               </h3>
@@ -162,7 +162,7 @@ export function SettingsModal({
                       localClusteringModel: e.target.value as WorkspaceSettings['localClusteringModel'],
                     }))
                   }
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-[#E9B949]"
                 >
                   <option value="minilm-l12-v2">
                     paraphrase-multilingual-MiniLM-L12-v2 (Lokal · 0 Token)
@@ -187,7 +187,7 @@ export function SettingsModal({
                       llmProvider: e.target.value as WorkspaceSettings['llmProvider'],
                     }))
                   }
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 focus:outline-none focus:border-[#E9B949] disabled:bg-gray-50 disabled:text-gray-400"
                 >
                   <option value="gemini-flash-lite">
                     Cloud API (Gemini 2.5 Flash-Lite)
@@ -217,7 +217,7 @@ export function SettingsModal({
                     }))
                   }
                   placeholder="http://localhost:11434"
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 font-mono focus:outline-none focus:border-blue-500 disabled:bg-gray-50"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 font-mono focus:outline-none focus:border-[#E9B949] disabled:bg-gray-50"
                 />
               </div>
             ) : (
@@ -234,7 +234,7 @@ export function SettingsModal({
                       setDraft((prev) => ({ ...prev, apiKey: e.target.value }))
                     }
                     placeholder="Masukkan API Key..."
-                    className="w-full bg-white border border-[#E5E7EB] rounded-md pl-3 pr-9 py-2 text-xs text-gray-800 font-mono focus:outline-none focus:border-blue-500 disabled:bg-gray-50"
+                    className="w-full bg-white border border-[#E5E7EB] rounded-md pl-3 pr-9 py-2 text-xs text-gray-800 font-mono focus:outline-none focus:border-[#E9B949] disabled:bg-gray-50"
                   />
                   <button
                     type="button"
@@ -277,7 +277,7 @@ export function SettingsModal({
                       monthlyTokenCap: Number(e.target.value) || 100000,
                     }))
                   }
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 tabular-nums focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 tabular-nums focus:outline-none focus:border-[#E9B949]"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export function SettingsModal({
                       maxQuotesPerCall: Number(e.target.value) || 20,
                     }))
                   }
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 tabular-nums focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 tabular-nums focus:outline-none focus:border-[#E9B949]"
                 />
               </div>
             </div>
@@ -336,7 +336,7 @@ export function SettingsModal({
                     }))
                   }
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-                    draft.enableCache ? 'bg-blue-600' : 'bg-gray-300'
+                    draft.enableCache ? 'bg-[#FF7B7B]' : 'bg-gray-300'
                   }`}
                 >
                   <span
@@ -373,7 +373,7 @@ export function SettingsModal({
           {/* Section 3: Konfigurasi Sumber Scraping & Intake */}
           <section className="rounded-lg border border-[#E5E7EB] bg-white p-5 space-y-4">
             <div className="flex items-center gap-2 border-b border-[#E5E7EB] pb-3">
-              <Globe className="w-4 h-4 text-sky-600" />
+              <Globe className="w-4 h-4 text-orange-600" />
               <h3 className="text-[13px] font-semibold text-gray-900">
                 3. Konfigurasi Sumber Scraping & Intake
               </h3>
@@ -404,14 +404,14 @@ export function SettingsModal({
                     }
                     className={`px-3 py-2 rounded-md border text-xs font-medium text-left flex items-center justify-between transition-colors cursor-pointer ${
                       enabled
-                        ? 'bg-blue-50/70 border-blue-200 text-blue-800'
+                        ? 'bg-[#FFF0EA]/70 border-[#FF7B7B]/35 text-[#9E3B3B]'
                         : 'bg-gray-50 border-[#E5E7EB] text-gray-400'
                     }`}
                   >
                     <span className="truncate">{src.label}</span>
                     <span
                       className={`w-2 h-2 rounded-full shrink-0 ${
-                        enabled ? 'bg-blue-600' : 'bg-gray-300'
+                        enabled ? 'bg-[#FF7B7B]' : 'bg-gray-300'
                       }`}
                     />
                   </button>
@@ -435,7 +435,7 @@ export function SettingsModal({
                       maxItemsPerScrape: Number(e.target.value) || 50,
                     }))
                   }
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 tabular-nums focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 tabular-nums focus:outline-none focus:border-[#E9B949]"
                 />
               </div>
 
@@ -453,7 +453,7 @@ export function SettingsModal({
                     }))
                   }
                   placeholder="https://proxy-pool.internal:8080"
-                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 font-mono placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#E5E7EB] rounded-md px-3 py-2 text-xs text-gray-800 font-mono placeholder:text-gray-400 focus:outline-none focus:border-[#E9B949]"
                 />
               </div>
             </div>
@@ -480,7 +480,7 @@ export function SettingsModal({
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium shadow-2xs transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-[#FF7B7B] hover:bg-[#F26666] text-white text-xs font-medium shadow-2xs transition-colors cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
                 <span>Simpan Pengaturan</span>

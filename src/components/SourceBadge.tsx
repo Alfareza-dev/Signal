@@ -128,16 +128,23 @@ export function StatusIcon({
       );
     case 'Pain Point':
       return (
-        <svg viewBox="0 0 16 16" fill="none" className={`${className} text-blue-600`} aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" className={`${className} text-[#FF7B7B]`} aria-hidden="true">
           <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
           <path d="M8 2 A6 6 0 0 1 8 14 Z" fill="currentColor" />
         </svg>
       );
     case 'Workaround':
       return (
-        <svg viewBox="0 0 16 16" fill="none" className={`${className} text-purple-600`} aria-hidden="true">
+        <svg viewBox="0 0 16 16" fill="none" className={`${className} text-[#E9B949]`} aria-hidden="true">
           <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
           <path d="M8 2 A6 6 0 1 1 2 8 L8 8 Z" fill="currentColor" />
+        </svg>
+      );
+    case 'Positif / Delighter':
+      return (
+        <svg viewBox="0 0 16 16" fill="none" className={`${className} text-emerald-500`} aria-hidden="true">
+          <circle cx="8" cy="8" r="6" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M5.2 8.2L7.1 10.1L11 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case 'Noise / Archived':
@@ -152,12 +159,12 @@ export function StatusIcon({
 
 export function getLabelColorClass(label: string): string {
   const palette = [
-    'bg-blue-50 text-blue-700 border-blue-200/60',
+    'bg-[#FFF0EA] text-[#D9534F] border-[#FF7B7B]/35/60',
     'bg-amber-50 text-amber-700 border-amber-200/60',
     'bg-purple-50 text-purple-700 border-purple-200/60',
     'bg-emerald-50 text-emerald-700 border-emerald-200/60',
     'bg-rose-50 text-rose-700 border-rose-200/60',
-    'bg-cyan-50 text-cyan-700 border-cyan-200/60',
+    'bg-amber-50 text-amber-700 border-amber-200/60',
   ];
   let hash = 0;
   for (let i = 0; i < label.length; i++) {
@@ -169,7 +176,7 @@ export function getLabelColorClass(label: string): string {
 export function getQuadrantBadgeClass(quadrant: EmpathyQuadrant): string {
   switch (quadrant) {
     case 'Says':
-      return 'bg-sky-50 text-sky-700 border-sky-200/70';
+      return 'bg-orange-50 text-orange-700 border-orange-200/70';
     case 'Thinks':
       return 'bg-violet-50 text-violet-700 border-violet-200/70';
     case 'Feels':

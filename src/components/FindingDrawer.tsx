@@ -32,6 +32,7 @@ const STATUSES: FindingStatus[] = [
   'Raw / Perlu Triage',
   'Pain Point',
   'Workaround',
+  'Positif / Delighter',
   'Noise / Archived',
 ];
 
@@ -153,7 +154,7 @@ export function FindingDrawer({
               href={finding.referenceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:underline break-all"
+              className="inline-flex items-center gap-1.5 text-xs text-[#FF7B7B] hover:text-[#D9534F] hover:underline break-all"
             >
               <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               <span>{finding.referenceUrl}</span>
@@ -174,7 +175,7 @@ export function FindingDrawer({
                     onClick={() => onUpdateFinding(finding.id, { status })}
                     className={`flex items-center gap-2 px-3 py-2 rounded-md border text-xs font-medium text-left transition-colors ${
                       active
-                        ? 'border-blue-500 bg-blue-50/70 text-blue-800'
+                        ? 'border-[#E9B949] bg-[#FFF0EA]/70 text-[#9E3B3B]'
                         : 'border-[#E5E7EB] bg-white text-gray-600 hover:bg-gray-50'
                     }`}
                   >
@@ -191,28 +192,40 @@ export function FindingDrawer({
             <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 block mb-2">
               Kuadran Empathy Map
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {QUADRANTS.map((q) => {
-                const active = finding.quadrant === q.value;
-                return (
-                  <button
-                    key={q.value}
-                    onClick={() =>
-                      onUpdateFinding(finding.id, {
-                        quadrant: active ? undefined : q.value,
-                      })
-                    }
-                    className={`px-3 py-2 rounded-md border text-xs font-medium text-left transition-colors ${
-                      active
-                        ? getQuadrantBadgeClass(q.value)
-                        : 'border-[#E5E7EB] bg-white text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    {q.label}
-                  </button>
-                );
-              })}
-            </div>
+            {finding.source === 'Jurnal (OpenAlex)' ? (
+              <div
+                title="Literatur sekunder dipisahkan dari 4 kuadran suara pengguna"
+                className="p-3 rounded-2xl bg-[#F4F0FB] border border-[#DFD5F5] text-xs text-[#6953A8]"
+              >
+                <span className="font-bold block mb-0.5">Validasi Akademik</span>
+                <span className="text-[11px] opacity-85">
+                  Literatur sekunder (OpenAlex) dipisahkan dari 4 kuadran suara pengguna langsung.
+                </span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {QUADRANTS.map((q) => {
+                  const active = finding.quadrant === q.value;
+                  return (
+                    <button
+                      key={q.value}
+                      onClick={() =>
+                        onUpdateFinding(finding.id, {
+                          quadrant: active ? undefined : q.value,
+                        })
+                      }
+                      className={`px-3 py-2 rounded-xl border text-xs font-medium text-left transition-colors ${
+                        active
+                          ? getQuadrantBadgeClass(q.value)
+                          : 'border-[#F2E4E0] bg-white text-gray-600 hover:bg-[#FFF7F5]'
+                      }`}
+                    >
+                      {q.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Tag / Label Editor */}
@@ -259,7 +272,7 @@ export function FindingDrawer({
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 placeholder="Tambah label baru..."
-                className="flex-1 bg-white border border-[#E5E7EB] rounded-md px-3 py-1.5 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
+                className="flex-1 bg-white border border-[#E5E7EB] rounded-md px-3 py-1.5 text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-[#E9B949]"
               />
               <button
                 type="submit"

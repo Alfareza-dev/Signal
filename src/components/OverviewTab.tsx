@@ -6,17 +6,22 @@ import {
   Archive,
   ArrowRight,
   BarChart3,
+  CalendarClock,
   CheckCircle2,
   Circle,
   Coins,
   Download,
+  FileEdit,
   Folder,
+  GitBranch,
   Layers,
+  Search,
   Sparkles,
   Wrench,
 } from 'lucide-react';
 import {
   EmpathyQuadrant,
+  FarmingSchedule,
   FinalReport,
   Finding,
   ProblemBrief,
@@ -27,9 +32,15 @@ import { SourceIcon } from './SourceBadge';
 interface OverviewTabProps {
   projectName: string;
   projectDescription: string;
+  versionLabel?: string;
+  keywordQuery?: string;
+  schedule?: FarmingSchedule;
+  researchNotes?: string;
   findings: Finding[];
   brief: ProblemBrief | null;
   finalReport: FinalReport | null;
+  chatTokensUsed?: number;
+  onUpdateResearchNotes?: (notes: string) => void;
   onGoToFindings: (filterTheme?: string) => void;
   onGoToEmpathyMap: () => void;
   onGoToAISynthesis: () => void;
@@ -53,8 +64,8 @@ const QUADRANTS: {
   {
     key: 'Says',
     title: 'Says (Diucapkan)',
-    cardClass: 'bg-sky-50/70 border-sky-200/70',
-    countClass: 'text-sky-700',
+    cardClass: 'bg-orange-50/70 border-orange-200/70',
+    countClass: 'text-orange-700',
   },
   {
     key: 'Thinks',
@@ -84,9 +95,15 @@ function safePct(part: number, whole: number): number {
 export function OverviewTab({
   projectName,
   projectDescription,
+  versionLabel = 'v1',
+  keywordQuery = '',
+  schedule,
+  researchNotes = '',
   findings,
   brief,
   finalReport,
+  chatTokensUsed = 0,
+  onUpdateResearchNotes,
   onGoToFindings,
   onGoToEmpathyMap,
   onGoToAISynthesis,
@@ -97,12 +114,14 @@ export function OverviewTab({
   const rawCount = findings.filter((f) => f.status === 'Raw / Perlu Triage').length;
   const painCount = findings.filter((f) => f.status === 'Pain Point').length;
   const workaroundCount = findings.filter((f) => f.status === 'Workaround').length;
+  const posCount = findings.filter((f) => f.status === 'Positif / Delighter').length;
   const noiseCount = findings.filter((f) => f.status === 'Noise / Archived').length;
   const triagedCount = totalFindings - rawCount;
   const validFindingsCount = totalFindings - noiseCount;
   const aiReadyCount = painCount + workaroundCount;
 
   const painPct = safePct(painCount, validFindingsCount);
+  const posPct = safePct(posCount, validFindingsCount);
   const noisePct = safePct(noiseCount, totalFindings);
   const tokenSavingPct = safePct(totalFindings - aiReadyCount, totalFindings);
 
@@ -183,7 +202,7 @@ export function OverviewTab({
   const completedStages = stages.filter((s) => s.done).length;
   const healthPct = Math.round((completedStages / stages.length) * 100);
   const projectTokensUsed =
-    (brief?.tokensUsed || 0) + (finalReport?.tokensUsed || 0);
+    (brief?.tokensUsed || 0) + (finalReport?.tokensUsed || 0) + chatTokensUsed;
   const latestProblemStatement =
     finalReport?.problemStatement || brief?.problemStatement || null;
 
@@ -254,14 +273,14 @@ export function OverviewTab({
   };
 
   return (
-    <div className="p-6 space-y-5 overflow-y-auto h-full bg-white">
+    <div className="p-6 space-y-5 overflow-y-auto h-full bg-[#FFF7F5] animate-fade-slide">
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-base font-semibold text-gray-900">
+          <h2 className="text-base font-bold text-[#2D213A]">
             Ringkasan Project — {projectName}
           </h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-xs text-[#7A6B84] mt-0.5">
             {projectDescription ||
               'Ringkasan progres riset, sebaran tema, sumber data, dan kesiapan sintesis.'}
           </p>
@@ -270,87 +289,87 @@ export function OverviewTab({
         <button
           type="button"
           onClick={handleExportSummary}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-[#E5E7EB] hover:bg-gray-50 text-xs font-medium text-gray-700 transition-colors cursor-pointer shrink-0"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#F2E4E0] hover:bg-[#FFF0EA] text-xs font-semibold text-[#2D213A] transition-colors cursor-pointer shrink-0 shadow-2xs"
         >
-          <Download className="w-3.5 h-3.5 text-gray-500" />
+          <Download className="w-3.5 h-3.5 text-[#7A6B84]" />
           <span>Export Ringkasan (.md)</span>
         </button>
       </div>
 
       {/* 5 KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        <div className="p-4 rounded-lg border border-[#E5E7EB] bg-white space-y-1.5">
+        <div className="p-4 rounded-2xl border border-[#F2E4E0] bg-white space-y-1.5 shadow-[0_4px_20px_rgba(255,123,123,0.04)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-[#7A6B84]">
               Total Temuan
             </span>
-            <Layers className="w-4 h-4 text-gray-400" />
+            <Layers className="w-4 h-4 text-[#7A6B84]" />
           </div>
-          <p className="text-2xl font-semibold text-gray-900 tabular-nums">
+          <p className="text-2xl font-bold text-[#2D213A] tabular-nums">
             {totalFindings}
           </p>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-[#7A6B84]">
             {triagedCount} sudah di-triage · {rawCount} menunggu Raw
           </p>
         </div>
 
-        <div className="p-4 rounded-lg border border-[#E5E7EB] bg-white space-y-1.5">
+        <div className="p-4 rounded-2xl border border-[#F2E4E0] bg-white space-y-1.5 shadow-[0_4px_20px_rgba(255,123,123,0.04)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-[#7A6B84]">
               Pain Points
             </span>
-            <AlertCircle className="w-4 h-4 text-blue-600" />
+            <AlertCircle className="w-4 h-4 text-rose-500" />
           </div>
-          <p className="text-2xl font-semibold text-gray-900 tabular-nums">
+          <p className="text-2xl font-bold text-[#2D213A] tabular-nums">
             {painCount}
           </p>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-[#7A6B84]">
             {painPct}% dari total temuan valid
           </p>
         </div>
 
-        <div className="p-4 rounded-lg border border-[#E5E7EB] bg-white space-y-1.5">
+        <div className="p-4 rounded-2xl border border-[#F2E4E0] bg-white space-y-1.5 shadow-[0_4px_20px_rgba(255,123,123,0.04)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-[#7A6B84]">
               Workarounds
             </span>
-            <Wrench className="w-4 h-4 text-purple-600" />
+            <Wrench className="w-4 h-4 text-[#E9B949]" />
           </div>
-          <p className="text-2xl font-semibold text-gray-900 tabular-nums">
+          <p className="text-2xl font-bold text-[#2D213A] tabular-nums">
             {workaroundCount}
           </p>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-[#7A6B84]">
             Solusi manual / akal-akalan pengguna
           </p>
         </div>
 
-        <div className="p-4 rounded-lg border border-[#E5E7EB] bg-white space-y-1.5">
+        <div className="p-4 rounded-2xl border border-[#F2E4E0] bg-white space-y-1.5 shadow-[0_4px_20px_rgba(255,123,123,0.04)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-[#7A6B84]">
               Noise Dibuang
             </span>
-            <Archive className="w-4 h-4 text-gray-400" />
+            <Archive className="w-4 h-4 text-[#7A6B84]" />
           </div>
-          <p className="text-2xl font-semibold text-gray-900 tabular-nums">
+          <p className="text-2xl font-bold text-[#2D213A] tabular-nums">
             {noiseCount}
           </p>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-[#7A6B84]">
             {noisePct}% disaring sebelum AI
           </p>
         </div>
 
-        <div className="p-4 rounded-lg border border-[#E5E7EB] bg-white space-y-1.5">
+        <div className="p-4 rounded-2xl border border-[#F2E4E0] bg-white space-y-1.5 shadow-[0_4px_20px_rgba(255,123,123,0.04)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-[#7A6B84]">
               Efisiensi Token AI
             </span>
-            <Coins className="w-4 h-4 text-emerald-600" />
+            <Coins className="w-4 h-4 text-emerald-500" />
           </div>
-          <p className="text-2xl font-semibold text-gray-900 tabular-nums">
+          <p className="text-2xl font-bold text-[#2D213A] tabular-nums">
             {projectTokensUsed > 0 ? `${projectTokensUsed} Token` : '0 Token'}
           </p>
           <div>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
               {projectTokensUsed > 0
                 ? `Hemat ~${tokenSavingPct}% · Cached`
                 : '100% Lokal'}
@@ -359,14 +378,101 @@ export function OverviewTab({
         </div>
       </div>
 
+      {/* Visual Sentiment Meter (Positif / Netral vs Negatif / Pain) */}
+      <div className="rounded-2xl border border-[#F2E4E0] bg-white p-4 shadow-[0_4px_20px_rgba(255,123,123,0.04)] space-y-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span className="font-bold text-[#2D213A]">
+            Sentiment Meter (Visual-First Summary)
+          </span>
+          <div className="flex flex-wrap items-center gap-4 text-[11px]">
+            <span className="inline-flex items-center gap-1.5 text-rose-600 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FB7185]" />
+              Negatif / Pain Point ({painPct}%)
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-amber-700 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#E9B949]" />
+              Workaround ({safePct(workaroundCount, validFindingsCount)}%)
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-emerald-700 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#34D399]" />
+              Positif / Delighter ({posPct}% · {posCount})
+            </span>
+          </div>
+        </div>
+        <div className="w-full h-3 bg-[#F6ECE9] rounded-full overflow-hidden flex">
+          <div
+            className="h-full bg-[#FB7185] transition-all duration-500"
+            style={{ width: `${painPct}%` }}
+          />
+          <div
+            className="h-full bg-[#E9B949] transition-all duration-500"
+            style={{ width: `${safePct(workaroundCount, validFindingsCount)}%` }}
+          />
+          <div
+            className="h-full bg-[#34D399] transition-all duration-500"
+            style={{ width: `${posPct}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Detail Konfigurasi Versi Aktif + Research Notes */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-[#F2E4E0] bg-white p-4 shadow-[0_4px_20px_rgba(255,123,123,0.04)] space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D213A]">
+              <GitBranch className="w-3.5 h-3.5 text-[#9B85D6]" />
+              Detail Konfigurasi Versi ({versionLabel})
+            </span>
+            {schedule?.enabled ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                <CalendarClock className="w-3 h-3" />
+                Auto: {schedule.frequency} · {schedule.time}
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-[#FFF7F5] text-[#7A6B84] border border-[#F2E4E0]">
+                Manual Scrape
+              </span>
+            )}
+          </div>
+          <div className="p-2.5 rounded-xl bg-[#FFF7F5] border border-[#F2E4E0]">
+            <div className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-[#7A6B84] mb-1">
+              <Search className="w-3 h-3 text-[#FF7B7B]" />
+              Keyword Query Aktif
+            </div>
+            <p className="text-xs font-mono text-[#2D213A] break-words">
+              {keywordQuery || 'Belum ada query khusus'}
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#F2E4E0] bg-white p-4 shadow-[0_4px_20px_rgba(255,123,123,0.04)] space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#2D213A]">
+              <FileEdit className="w-3.5 h-3.5 text-[#FF7B7B]" />
+              Research Notes ({versionLabel})
+            </span>
+            <span className="text-[10.5px] text-[#7A6B84]">
+              Tersimpan otomatis
+            </span>
+          </div>
+          <textarea
+            rows={2}
+            value={researchNotes}
+            onChange={(e) => onUpdateResearchNotes?.(e.target.value)}
+            placeholder="Catat hipotesis awal, konteks rilis, atau observasi penting untuk versi ini..."
+            className="w-full rounded-xl border border-[#EEDCD7] bg-[#FFFDFC] px-3 py-2 text-xs text-[#2D213A] placeholder:text-[#9A8CA4] focus:outline-none focus:border-[#E9B949] resize-none"
+          />
+        </div>
+      </div>
+
       {/* 2x2 Analytical Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Card 1: Top Tema Masalah (Interaktif) + Sebaran Folder */}
-        <div className="rounded-lg border border-[#E5E7EB] bg-white p-5 flex flex-col justify-between space-y-4">
+        <div className="rounded-2xl border border-[#F2E4E0] bg-white p-5 flex flex-col justify-between space-y-4 shadow-[0_4px_20px_rgba(255,123,123,0.04)]">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-600" />
+                <BarChart3 className="w-4 h-4 text-[#FF7B7B]" />
                 <h3 className="text-[13.5px] font-semibold text-gray-900">
                   Top Tema Masalah
                 </h3>
@@ -392,10 +498,10 @@ export function OverviewTab({
                       key={item.theme}
                       type="button"
                       onClick={() => onGoToFindings(item.theme)}
-                      className="w-full text-left group p-1.5 -mx-1.5 rounded-md hover:bg-blue-50/40 transition-colors cursor-pointer space-y-1"
+                      className="w-full text-left group p-1.5 -mx-1.5 rounded-md hover:bg-[#FFF0EA]/40 transition-colors cursor-pointer space-y-1"
                     >
                       <div className="flex items-center justify-between text-xs gap-2">
-                        <span className="font-medium text-gray-800 group-hover:text-blue-700 truncate">
+                        <span className="font-medium text-gray-800 group-hover:text-[#D9534F] truncate">
                           {item.theme}
                         </span>
                         <span className="text-[11px] text-gray-500 tabular-nums shrink-0">
@@ -407,7 +513,7 @@ export function OverviewTab({
                       </div>
                       <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-blue-600 group-hover:bg-blue-700 rounded-full transition-all duration-300"
+                          className="h-full bg-[#FF7B7B] group-hover:bg-[#F26666] rounded-full transition-all duration-300"
                           style={{ width: `${widthPct}%` }}
                         />
                       </div>
@@ -419,7 +525,7 @@ export function OverviewTab({
           </div>
 
           {/* Sebaran Folder */}
-          <div className="pt-3 border-t border-[#E5E7EB]">
+          <div className="pt-3 border-t border-[#F2E4E0]">
             <div className="flex items-center gap-1.5 mb-2">
               <Folder className="w-3.5 h-3.5 text-gray-400" />
               <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
@@ -433,7 +539,7 @@ export function OverviewTab({
                 {folderDistribution.map((f) => (
                   <span
                     key={f.folder}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F8F9FA] border border-[#E5E7EB] text-xs text-gray-700"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#F8F9FA] border border-[#F2E4E0] text-xs text-gray-700"
                   >
                     <span>{f.folder}</span>
                     <span className="text-[11px] font-semibold text-gray-400 tabular-nums">
@@ -447,7 +553,7 @@ export function OverviewTab({
         </div>
 
         {/* Card 2: Distribusi Sumber Data (Multi-Source) */}
-        <div className="rounded-lg border border-[#E5E7EB] bg-white p-5 flex flex-col justify-between space-y-4">
+        <div className="rounded-2xl border border-[#F2E4E0] bg-white p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[13.5px] font-semibold text-gray-900">
@@ -503,7 +609,7 @@ export function OverviewTab({
           </div>
 
           {/* Academic Validation Indicator */}
-          <div className="pt-3 border-t border-[#E5E7EB] flex items-center justify-between gap-2">
+          <div className="pt-3 border-t border-[#F2E4E0] flex items-center justify-between gap-2">
             {openAlexCount >= 1 ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -519,7 +625,7 @@ export function OverviewTab({
                 <button
                   type="button"
                   onClick={onOpenIntakeModal}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                  className="text-xs font-semibold text-[#FF7B7B] hover:text-[#D9534F] hover:underline cursor-pointer"
                 >
                   + Ambil Data
                 </button>
@@ -529,7 +635,7 @@ export function OverviewTab({
         </div>
 
         {/* Card 3: Cakupan Empathy Map (4 Kuadran) */}
-        <div className="rounded-lg border border-[#E5E7EB] bg-white p-5 flex flex-col justify-between space-y-4">
+        <div className="rounded-2xl border border-[#F2E4E0] bg-white p-5 flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-[13.5px] font-semibold text-gray-900">
@@ -543,7 +649,7 @@ export function OverviewTab({
             <button
               type="button"
               onClick={onGoToEmpathyMap}
-              className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#FF7B7B] hover:text-[#D9534F] hover:underline cursor-pointer"
             >
               <span>Buka Board</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -558,7 +664,7 @@ export function OverviewTab({
               return (
                 <div
                   key={q.key}
-                  className={`p-3 rounded-lg border ${q.cardClass} flex flex-col justify-between min-h-[76px]`}
+                  className={`p-3 rounded-2xl border ${q.cardClass} flex flex-col justify-between min-h-[76px]`}
                 >
                   <span className="text-xs font-semibold text-gray-800">
                     {q.title}
@@ -584,20 +690,20 @@ export function OverviewTab({
         </div>
 
         {/* Card 4: Kesiapan Riset & Langkah Berikutnya */}
-        <div className="rounded-lg border border-[#E5E7EB] bg-white p-5 flex flex-col justify-between space-y-4">
+        <div className="rounded-2xl border border-[#F2E4E0] bg-white p-5 flex flex-col justify-between space-y-4">
           <div className="space-y-3.5">
             <div className="flex items-center justify-between">
               <h3 className="text-[13.5px] font-semibold text-gray-900">
                 Kesiapan Riset (Research Health)
               </h3>
-              <span className="text-xs font-semibold text-blue-600 tabular-nums">
+              <span className="text-xs font-semibold text-[#FF7B7B] tabular-nums">
                 {healthPct}% ({completedStages}/4)
               </span>
             </div>
 
             <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                className="h-full bg-[#FF7B7B] rounded-full transition-all duration-300"
                 style={{ width: `${healthPct}%` }}
               />
             </div>
@@ -631,7 +737,7 @@ export function OverviewTab({
           </div>
 
           {/* Contextual Next Action / Brief Snippet */}
-          <div className="pt-3 border-t border-[#E5E7EB] space-y-2.5">
+          <div className="pt-3 border-t border-[#F2E4E0] space-y-2.5">
             {rawCount > 0 && (
               <div className="flex items-center justify-between gap-2 p-2.5 rounded-md bg-amber-50/70 border border-amber-200/70">
                 <span className="text-xs text-amber-800">
@@ -650,10 +756,10 @@ export function OverviewTab({
             )}
 
             {latestProblemStatement && (
-              <div className="p-3 rounded-md bg-[#F8F9FA] border border-[#E5E7EB] space-y-1.5">
+              <div className="p-3 rounded-md bg-[#F8F9FA] border border-[#F2E4E0] space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-gray-700">
-                    <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#FF7B7B]" />
                     <span>Rumusan Masalah Terakhir</span>
                     <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {finalReport?.mode === 'local' && !brief
@@ -666,7 +772,7 @@ export function OverviewTab({
                     onClick={
                       finalReport ? onGoToFinalResult : onGoToAISynthesis
                     }
-                    className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[#FF7B7B] hover:underline cursor-pointer"
                   >
                     <span>
                       {finalReport ? 'Lihat Final Result' : 'Lihat Sintesis'}
